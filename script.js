@@ -49,10 +49,17 @@ function processTrajectoryFile(content) {
                 // 必要な情報を抽出
                 const timestep = parseInt(lines[i + 1].trim(), 10);
                 const numAtoms = parseInt(lines[i + 3].trim(), 10);
+
+                // ボックスサイズ情報を抽出
+                const boxBoundsX = lines[i + 5].trim().split(/\s+/);
+                const boxBoundsY = lines[i + 6].trim().split(/\s+/);
+                const boxBoundsZ = lines[i + 7].trim().split(/\s+/);
+                const latticeInfo = `${boxBoundsX[0]} ${boxBoundsX[1]} ${boxBoundsY[0]} ${boxBoundsY[1]} ${boxBoundsZ[0]} ${boxBoundsZ[1]}`;
+
                 const headerLine = lines[i + 8].trim();
                 
                 const headers = headerLine.replace("ITEM: ATOMS ", "").split(" ");
-                const typeCol = headers.indexOf('type');
+                const typeCol = headers.indexOf('type'); // 原子種
                 const xCol = headers.indexOf('x');
                 const yCol = headers.indexOf('y');
                 const zCol = headers.indexOf('z');
@@ -64,7 +71,8 @@ function processTrajectoryFile(content) {
 
                 let xyzLines = [];
                 xyzLines.push(numAtoms.toString());
-                xyzLines.push(`Timestep: ${timestep}`);
+                // コメント行にLattice情報とTimestep情報を追加
+                xyzLines.push(`Lattice="${latticeInfo}" Timestep: ${timestep} Properties=species:S:1:pos:R:3`);
 
                 const startLine = i + 9;
                 for (let j = 0; j < numAtoms; j++) {
@@ -72,7 +80,8 @@ function processTrajectoryFile(content) {
                     if(atomLine.length <= Math.max(typeCol, xCol, yCol, zCol)){
                         continue; // 行の要素が足りない場合はスキップ
                     }
-                    const element = atomLine[typeCol];
+                    // 原子種と座標を読み込む
+                    const element = atomLine[typeCol]; 
                     const x = parseFloat(atomLine[xCol]).toFixed(6);
                     const y = parseFloat(atomLine[yCol]).toFixed(6);
                     const z = parseFloat(atomLine[zCol]).toFixed(6);
