@@ -1,1 +1,1 @@
-# lammpstraj2xyz_-0
+# lammpstraj2xyz_universal
